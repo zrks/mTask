@@ -1,0 +1,34 @@
+apply plugin: 'java'
+apply plugin: 'edu.sc.seis.launch4j'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'edu.sc.seis.gradle:launch4j:2.4.2'
+    }
+}
+
+
+dependencies {
+    compile "joda-time:joda-time:2.2"
+    testCompile "junit:junit:4.12"
+}
+
+jar {
+    baseName = 'gs-gradle'
+    version  = '0.1.0'
+}
+
+createExe {
+  mainClassName = 'hello.HelloWorld'
+}
+
+task msi(type: Exec) {
+    commandLine 'wixl', '-v', 'hello.wxs'
+}

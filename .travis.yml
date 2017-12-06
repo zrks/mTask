@@ -1,0 +1,15 @@
+services:
+  - docker
+
+language: java
+
+before_install:
+  - echo "deb http://cz.archive.ubuntu.com/ubuntu xenial main universe" | sudo tee -a /etc/apt/sources.list
+  - sudo apt-get -qq update
+  - sudo apt-get install -yqq wixl
+
+script: gradle build && gradle createExe && gradle msi
+
+# TODO: Currently experiencing problems with properly setting .wxs file attributes.
+# script: docker image build -t wix-builder .
+# script: docker container run -v $(pwd):/app wix-builder "cd /app && wine /home/xclient/wix/candle.exe main.wxs && wine /home/xclient/wix/light.exe -sval -ext WixUIExtension main.wixobj"

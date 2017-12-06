@@ -1,0 +1,102 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+
+
+    <?define VersionNumber="!(bind.FileVersion.meaTaskEXE)" ?>
+    <?define UpgradeCode="ddfb0035-66bb-4baa-ba59-7fbaf8b254f7" ?>
+
+    <!-- TODO: Check if this makes sense. -->
+	<!-- 32-bit / 64-bit variables -->
+	<?if x64 = x64 ?>
+		<?define Win64 = "yes" ?>
+		<?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
+		<?define uberAgentExeSourcePath = "./build/launch4j/meatask.exe" ?>
+	<?else ?>
+		<?define Win64 = "no" ?>
+		<?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
+		<?define uberAgentExeSourcePath = "./build/launch4j/meaTask.exe" ?>
+	<?endif ?>
+
+
+    <Product Name="!(loc.ApplicationName)"
+             Id="*"
+             UpgradeCode="$(var.UpgradeCode)"
+             Language="!(loc.Language)"
+             Version="$(var.VersionNumber)"
+             Manufacturer="!(loc.ManufacturerFullName)"
+    >
+
+
+    <!-- Do we need this attribute?  Codepage='1252' -->
+
+
+    <Package Id="*"
+             Keywords='Installer'
+             Description="!(loc.ProductDescription)"
+             Comments="!(loc.Comments) $(var.VersionNumber)"
+             InstallerVersion="100"
+             Compressed="yes"
+             InstallScope="perMachine"
+    />
+
+
+    <!-- TODO: Is this the right place for this attribute? -->
+    <Media Id="1"
+           Cabinet="media1.cab"
+           EmbedCab="yes"
+    />
+
+    <!-- UI images.
+    <WixVariable Id="WixUIBannerBmp" value="images/BannerTop.bmp" />
+    <WixVariable Id="WixUIDialogBmp" value="images/Dialog.bmp" />
+    -->
+    <!-- Icons.
+    <Icon Id="Icon.exe" SourceFile="images/app.ico" />
+    -->
+
+    <!-- License agreement text: dummy. Real text is set in WXS file.
+    <WixVariable Id="WixUILicenseRtf" Value="dummy" />
+    -->
+
+
+    <!-- Main installer sequence.
+    <InstallExecuteSequence>
+        <Custom Action="SetARPINSTALLLOCATION" After="InstallValidate"></Custom>
+    </InstallExecuteSequence>
+
+    <CustomAction Id="SetARPINSTALLLOCATION" Property="ARPINSTALLLOCATION" Value="[INSTALLDIR]" />
+    -->
+
+    <!-- TODO: Check if we need to add some Launch conditions. -->
+
+
+    <!-- Lets build directory structure. -->
+    
+    <Directory Id="TARGETDIR" Name="SourceDir">
+
+      <Directory Id="$(var.PlatformProgramFilesFolder)">
+
+        <Directory Id="meaTask" Name="meaTask">
+          <Directory Id="INSTALLDIR" Name="meaTask 1.0">
+
+            <Component Id='MainExecutable' Guid='ABCDDCBA-83F1-4F22-985B-FDB3C8ABD471'>
+              <File Id='meaTaskEXE' Name='meaTask.exe' DiskId='1' Source='./build/launch4j/meatask.exe' KeyPath='yes'/>
+            </Component>
+
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+
+
+    <!-- Define the installer UI. -->
+	<UI>
+		<UIRef Id="WixUI_HK" />
+	</UI>
+
+	<Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+	<Property Id="WIXUI_SERVERS" Value="SERVERS" />
+
+
+  </Product>
+</Wix>
