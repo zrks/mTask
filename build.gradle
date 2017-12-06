@@ -30,5 +30,5 @@ createExe {
 }
 
 task msi(type: Exec) {
-    commandLine 'wixl', '-v', 'hello.wxs'
+    commandLine 'wixl', '-v', 'main.wxs'
 }
