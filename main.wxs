@@ -1,102 +1,88 @@
-<?xml version='1.0' encoding='windows-1252'?>
-<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+<?xml version="1.0" encoding="windows-1252"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 
+    <!-- Product element creates .msi file. -->
+    <Product Id="*"
+             UpgradeCode="12345678-1234-1234-1234-111111111111"
+             Name="meaApplication"
+             Version="0.0.1"
+             Manufacturer="zrks"
+             Language="1033">
 
-    <?define VersionNumber="!(bind.FileVersion.meaTaskEXE)" ?>
-    <?define UpgradeCode="ddfb0035-66bb-4baa-ba59-7fbaf8b254f7" ?>
+        <!-- Package properties can be seen through Explorer. -->
+        <Package InstallerVersion="200"
+                 Comments="Windows Installer Package"/>
 
-    <!-- TODO: Check if this makes sense. -->
-	<!-- 32-bit / 64-bit variables -->
-	<?if x64 = x64 ?>
-		<?define Win64 = "yes" ?>
-		<?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
-		<?define uberAgentExeSourcePath = "./build/launch4j/meatask.exe" ?>
-	<?else ?>
-		<?define Win64 = "no" ?>
-		<?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
-		<?define uberAgentExeSourcePath = "./build/launch4j/meaTask.exe" ?>
-	<?endif ?>
+        <!-- Adding this element to solve 'Unresolved reference to symbol 'Media:1'' -->
+        <Media Id="1"/>
 
+        <!-- Directory layout for the product. Maps source and target directories. -->
+        <Directory Id="TARGETDIR" Name="SourceDir">
 
-    <Product Name="!(loc.ApplicationName)"
-             Id="*"
-             UpgradeCode="$(var.UpgradeCode)"
-             Language="!(loc.Language)"
-             Version="$(var.VersionNumber)"
-             Manufacturer="!(loc.ManufacturerFullName)"
-    >
+            <Directory Id="ProgramFilesFolder">
+                <!-- We will reference Directory Id later in this file. -->
+                <Directory Id="APPLICATIONROOTDIRECTORY" Name="meaTaskApplication"/>
+            </Directory>
 
+            <!-- Directory layout for Desktop Shortcut. -->
+            <Directory Id="DesktopFolder" Name="Desktop">
+		    	<Component Id="DesktopShortcut" Guid="12345678-1237-1237-1237-222222222222">
+		    	<Condition>INSTALLDESKTOPSHORTCUT</Condition>
+                <!--                <RegistryKey Root="HKCU"
+                             Key="meaAppKey"
+                             Action="createAndRemoveOnUninstall">
+                             <RegistryValue Name="meaAppRegistryKey"
+                                            Value="1"
+                                            Type="integer"
+                                            KeyPath="yes"/>
+                </RegistryKey>
+                -->
+                <Shortcut Id="DesktopShortcut"
+                          Directory="DesktopFolder"
+                          Name="meaApp"
+                          WorkingDirectory="APPLICATIONROOTDIRECTORY"
+                          Target="[APPLICATIONROOTDIRECTORY]meaTaskIcon.exe"/>
+		    	</Component>
+            </Directory>
 
-    <!-- Do we need this attribute?  Codepage='1252' -->
+        </Directory>
 
-
-    <Package Id="*"
-             Keywords='Installer'
-             Description="!(loc.ProductDescription)"
-             Comments="!(loc.Comments) $(var.VersionNumber)"
-             InstallerVersion="100"
-             Compressed="yes"
-             InstallScope="perMachine"
-    />
-
-
-    <!-- TODO: Is this the right place for this attribute? -->
-    <Media Id="1"
-           Cabinet="media1.cab"
-           EmbedCab="yes"
-    />
-
-    <!-- UI images.
-    <WixVariable Id="WixUIBannerBmp" value="images/BannerTop.bmp" />
-    <WixVariable Id="WixUIDialogBmp" value="images/Dialog.bmp" />
-    -->
-    <!-- Icons.
-    <Icon Id="Icon.exe" SourceFile="images/app.ico" />
-    -->
-
-    <!-- License agreement text: dummy. Real text is set in WXS file.
-    <WixVariable Id="WixUILicenseRtf" Value="dummy" />
-    -->
-
-
-    <!-- Main installer sequence.
-    <InstallExecuteSequence>
-        <Custom Action="SetARPINSTALLLOCATION" After="InstallValidate"></Custom>
-    </InstallExecuteSequence>
-
-    <CustomAction Id="SetARPINSTALLLOCATION" Property="ARPINSTALLLOCATION" Value="[INSTALLDIR]" />
-    -->
-
-    <!-- TODO: Check if we need to add some Launch conditions. -->
-
-
-    <!-- Lets build directory structure. -->
-    
-    <Directory Id="TARGETDIR" Name="SourceDir">
-
-      <Directory Id="$(var.PlatformProgramFilesFolder)">
-
-        <Directory Id="meaTask" Name="meaTask">
-          <Directory Id="INSTALLDIR" Name="meaTask 1.0">
-
-            <Component Id='MainExecutable' Guid='ABCDDCBA-83F1-4F22-985B-FDB3C8ABD471'>
-              <File Id='meaTaskEXE' Name='meaTask.exe' DiskId='1' Source='./build/launch4j/meatask.exe' KeyPath='yes'/>
+		<!-- Directory layout for Installation files. -->
+        <DirectoryRef Id="APPLICATIONROOTDIRECTORY">
+            <Component Id="meaApp.exe" Guid="12345678-1235-1235-1235-222222222222">
+                <File Id="meaApp.exe"
+                      Source="./build/launch4j/meaTask.exe"
+                      KeyPath="yes"
+                      Checksum="yes"/>
             </Component>
 
-          </Directory>
-        </Directory>
-      </Directory>
-    </Directory>
+            <Component Id="Readme.txt" Guid="12345678-1236-1236-1236-333333333333">
+                <File Id="Readme.txt"
+                      Source="./Readme.txt"
+                      KeyPath="yes"/>
+            </Component>
+        </DirectoryRef>
 
 
-    <!-- Define the installer UI. -->
-	<UI>
-		<UIRef Id="WixUI_HK" />
-	</UI>
+        <!-- Directive to install referenced files. -->
+        <Feature Id="meaApp"
+                 Title="meaApplication"
+                 Level="1">
+            <ComponentRef Id="meaApp.exe"/>
+            <ComponentRef Id="Readme.txt"/>
+			<!-- Icon referenced in Shortcut attribute. -->
+			<ComponentRef Id="DesktopShortcut"/>
+        </Feature>
 
-	<Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
-	<Property Id="WIXUI_SERVERS" Value="SERVERS" />
 
+        <!-- Installer dialog setup. -->
+        <Property Id="WIXUI_INSTALLDIR" Value="ProgramFilesFolder"/>
+        <UIRef Id="WixUI_InstallDir"/>
 
-  </Product>
+        <!-- Place shortcut on desktop. -->
+        <Property Id="INSTALLDESKTOPSHORTCUT" Value="1" />
+
+        <Icon Id="DesktopShortcut" SourceFile="meaTaskIcon.exe"/>
+
+    </Product>
 </Wix>
