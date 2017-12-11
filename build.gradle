@@ -46,11 +46,7 @@ task createContainer(type: DockerCreateContainer) {
 task startContainer(type: DockerStartContainer) {
     dependsOn createContainer
 
-    // hostPath "${projectDir}"
-    // remotePath '/app' 
     targetContainerId { createContainer.getContainerId() }
-    // runRemoteCommand("Executing candle.exe", "wine /home/wix/wix/candle.exe main.wxs")
-    // runRemoteCommand = "wine /home/wix/wix/candle.exe main.wxs"
 }
 
 task copyFileFromContainer(type: DockerCopyFileFromContainer) {
@@ -63,6 +59,15 @@ task copyFileFromContainer(type: DockerCopyFileFromContainer) {
 task createDockerfile(type: Dockerfile) {
     destFile = project.file("Dockerfile")
     from "justmoon/wix"
-    copyFile("./*", "/app")
+    user("root")
+    runCommand("mkdir /app/ && chown wix /app/")
+    user("wix")
+    copyFile("./*", "/app/")
     runCommand("cd /app && wine /home/wix/wix/candle.exe main.wxs")
+}
+
+task buildImage(type: DockerBuildImage) {
+    dependsOn createDockerfile
+    inputDir = "${projectDir}"
+    tag = 'zrks/wix-builder'
 }
